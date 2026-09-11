@@ -12,13 +12,23 @@
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://carinafonte.adv.br" />
 
-    <!-- Trailing slash redirect for GitHub Pages to ensure relative assets resolve properly -->
+    <!-- Trailing slash & routing resolution for GitHub Pages -->
     <script>
       (function() {
         if (window.location.hostname.endsWith('github.io')) {
           var pathname = window.location.pathname;
-          if (!pathname.endsWith('/') && !pathname.split('/').pop().includes('.')) {
+          // Check if pathname ends with an actual file extension (e.g. .html, .js, .css)
+          var isFile = /\.[a-zA-Z0-9]{2,5}$/.test(pathname);
+          if (!pathname.endsWith('/') && !isFile) {
             window.location.replace(pathname + '/' + window.location.search + window.location.hash);
+            return;
+          }
+          // If running the uncompiled root index.html on GitHub Pages (when user deploys branch main with folder / (root)),
+          // seamlessly redirect to /docs/ where the compiled production bundle is located
+          var isRawRoot = document.querySelector('script[src^="/src/"]');
+          if (isRawRoot && !pathname.includes('/docs')) {
+            var target = pathname.endsWith('/') ? pathname + 'docs/' : pathname + '/docs/';
+            window.location.replace(target + window.location.search + window.location.hash);
           }
         }
       })();
